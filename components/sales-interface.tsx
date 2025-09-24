@@ -12,6 +12,7 @@ import { SalesHistory } from "@/components/sales-history"
 import { Producttype } from "@/lib/types/product.type"
 import { CustomerApi, productApi, SaleApi } from "@/lib/api/apis"
 import { Customer } from "@/lib/types/customer.type";
+import InvoicePreview from "./InvoicePreview";
 
 interface CartItem {
   _id: string
@@ -31,6 +32,9 @@ export function SalesInterface() {
   const [payAmount, setPayAmount] = useState<number>(0) // 👈 Pay Amount state
    const [customers, setCustomers] = useState<Customer[]>([])
   const [selectedCustomer, setSelectedCustomer] = useState<string>("")
+    const [showInvoice, setShowInvoice] = useState(false);
+  const [latestSale, setLatestSale] = useState<any>(null);
+  const [status, setStatus] = useState("COMPLETED");
 
 
   // Fetch products
@@ -126,7 +130,7 @@ export function SalesInterface() {
   }
 
   const saleData = {
-    Invoice: `Inv_No:-${Date.now()}`,
+    Invoice: `Inv_No: ${Date.now().toString().slice(-6)}`,
     customer: selectedCustomer,
     items: cart.map(item => ({
       product: item._id,
@@ -134,7 +138,7 @@ export function SalesInterface() {
       price: item.price,
     })),
     total: getFinalTotal(), // 👈 keep this as calculated total
-    status: "COMPLETED",
+     status: status,
     PayAmmount: payAmount,   // 👈 whatever user entered
   };
 
@@ -155,6 +159,8 @@ export function SalesInterface() {
     toast.success(result.message || "✅ Sale processed successfully!");
     setCart([]);
     fetchData();
+    setLatestSale(result.data?._id);
+      setShowInvoice(true);
   } catch (err) {
     console.error(err);
     toast.error("⚠️ Something went wrong. Please try again.");
@@ -302,7 +308,9 @@ export function SalesInterface() {
                       className="w-32 text-right"
                     />
                   </div>
-  <div className="flex justify-between items-center text-sm mt-2">
+
+
+    <div className="flex justify-between items-center text-sm mt-2">
   <span>Customer:</span>
   <select
     value={selectedCustomer}
@@ -315,6 +323,28 @@ export function SalesInterface() {
     ))}
   </select>
 </div>
+
+{/* 🟢 Show Status dropdown only if customer is selected */}
+{selectedCustomer && (
+  <div className="flex justify-between items-center text-sm mt-2">
+    <span>Status:</span>
+    <select
+      value={status}
+      onChange={(e) => setStatus(e.target.value)}
+      className="w-32 text-right border rounded px-2 py-1"
+    >
+      <option value="COMPLETED">Completed</option>
+      <option value="PENDING">Pending Bill</option>
+    </select>
+  </div>
+)}
+
+
+
+
+
+
+
                 </div>
 
                 <div className="space-y-2">
@@ -331,6 +361,16 @@ export function SalesInterface() {
           </CardContent>
         </Card>
       </div>
+      {/* 🧾 Invoice Modal/Preview */}
+{showInvoice && latestSale && (
+  <InvoicePreview
+    saleId={latestSale}
+    onClose={() => {
+      setShowInvoice(false);
+      setLatestSale(null);
+    }}
+  />
+)}
     </div>
   )
 }

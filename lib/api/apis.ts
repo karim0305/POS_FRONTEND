@@ -45,8 +45,11 @@ export const purchaseApi = {
 export const SaleApi = {
   ProcessPayment: `${baseUrl}/sales`,
   SaleHistory: `${baseUrl}/sales`,
+  update: (id: string) => `${baseUrl}/sales/${id}`,
+  Invoice: (id: string) => `${baseUrl}/sales/${id}`,
   RefundSale: (id: string) => `${baseUrl}/sales/${id}/refund`,
   getSaleById: (id: string) => `${baseUrl}/sales/${id}`,
+  todaystats: `${baseUrl}/sales/today-stats`,
 };
 
 export const UserApi = {

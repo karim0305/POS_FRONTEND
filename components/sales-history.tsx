@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Search, MoreHorizontal, Eye, Receipt, RefreshCw } from "lucide-react"
+import { Search, MoreHorizontal, Eye, Receipt, RefreshCw, Pencil } from "lucide-react"
 import { SaleApi } from "@/lib/api/apis"
 import { Sale } from "@/lib/types/sale.type"
 import { SaleViewDialog } from "./ViewInvice"
-import { PrintDialog } from "./printInvice"
+import InvoicePreview from "./InvoicePreview"
+import { EditInvoiceDialog } from "./editInvice"
 
 
 export function SalesHistory() {
@@ -20,11 +21,21 @@ export function SalesHistory() {
   const [mockSales, setMockSales] = useState<Sale[]>([])
   const [sales, setSales] = useState<Sale[]>([])
   const [open, setOpen] = useState(false);
-  const [openPrint, setOpenPrint] = useState(false);
+
+    const [showInvoice, setShowInvoice] = useState(false);
+    const [latestSale, setLatestSale] = useState<any>(null);
+    const [todayStats, setTodayStats] = useState({
+  totalSales: 0,
+  avgSales: 0,
+  totalItems: 0,
+  invoices: 0,
+});
+    const [showedit, setShowEdit] = useState(false);
 
 
   useEffect(() => {
-    GetHistory()
+    GetHistory();
+    TodayStats();
   }, [])
   const GetHistory = async () => {
     const res = await fetch(SaleApi.SaleHistory);
@@ -32,6 +43,18 @@ export function SalesHistory() {
     setMockSales(data);
     console.log(data);
   };
+
+
+  const TodayStats = async () => {
+  try {
+    const res = await fetch(SaleApi.todaystats);
+    const data = await res.json();
+    setTodayStats(data);
+    console.log("Today Stats:", data);
+  } catch (err) {
+    console.error("Error fetching today stats:", err);
+  }
+};
 
 
   const handleRefund = async (id: string) => {
@@ -67,30 +90,24 @@ export function SalesHistory() {
     console.log(data);
   }
   const handlePrint = async (id: string) => {
-    const res = await fetch(SaleApi.getSaleById(id));
-    const data = await res.json();
-    setSales([data]);
-    setOpenPrint(true);
-    console.log(data);
+  
+
+    setLatestSale(id)
+    setShowInvoice(true)
+
 
   }
 
   const closedial = () => {
     setOpen(false);
-    setOpenPrint(false);
   }
 
-  const filteredSales = mockSales.filter((sale) => {
-    const customerName =
-      typeof sale.customer === "string"
-        ? sale.customer
-        : sale.customer?.name || "";
+const filteredSales = mockSales.filter((sale) => {
+  // Remove the "Inv_No:" prefix and extra spaces
+  const invoiceNumber = sale.Invoice?.replace("Inv_No:", "").trim() || "";
 
-    return (
-      sale._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customerName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
+  return invoiceNumber.includes(searchTerm.trim());
+});
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -98,12 +115,13 @@ export function SalesHistory() {
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Completed</Badge>
       case "REFUNDED":
         return <Badge variant="destructive">Refunded</Badge>
-      case "pending":
+      case "PENDING":
         return <Badge variant="secondary">Pending</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
   }
+
 
   const getTodayTotal = () => {
     const today = "2024-01-15"
@@ -117,49 +135,59 @@ export function SalesHistory() {
     return mockSales.filter((sale) => sale.date === today).length
   }
 
+
+
+
+const [selectedSale, setSelectedSale] = useState<any | null>(null)
+
+const handleUpdate = (id: string) => {
+  setSelectedSale(id)   // ✅ sirf id set karo
+  setShowEdit(true)
+}
+
   return (
     <div className="space-y-6">
       {/* Daily Summary */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${getTodayTotal().toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">{getTodayTransactions()} transactions</p>
-          </CardContent>
-        </Card>
+   <div className="grid gap-4 md:grid-cols-3">
+  {/* Total Sales */}
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
+      <Receipt className="h-4 w-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">Rs.{todayStats?.totalSales ? todayStats.totalSales.toFixed(2) : "0.00"}</div>
+      <p className="text-xs text-muted-foreground">{todayStats?.invoices ? todayStats.invoices : 0} transactions</p>
+    </CardContent>
+  </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Sale</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${getTodayTransactions() > 0 ? (getTodayTotal() / getTodayTransactions()).toFixed(2) : "0.00"}
-            </div>
-            <p className="text-xs text-muted-foreground">Per transaction</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Items Sold</CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mockSales
-                .filter((sale) => sale.date === "2024-01-15" && sale.status === "COMPLETED")
-                .reduce((total, sale) => total + sale.items.length, 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">Today</p>
-          </CardContent>
-        </Card>
+  {/* Average Sale */}
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">Average Sale</CardTitle>
+      <Receipt className="h-4 w-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">
+        Rs.{todayStats.avgSales.toFixed(2)}
       </div>
+      <p className="text-xs text-muted-foreground">Per transaction</p>
+    </CardContent>
+  </Card>
+
+  {/* Items Sold */}
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">Items Sold</CardTitle>
+      <Receipt className="h-4 w-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{todayStats.totalItems}</div>
+      <p className="text-xs text-muted-foreground">Today</p>
+    </CardContent>
+  </Card>
+</div>
+
 
       {/* Sales Table */}
       <Card>
@@ -214,31 +242,57 @@ export function SalesHistory() {
 
                   <TableCell className="font-medium">${sale.total.toFixed(2)}</TableCell>
                   <TableCell>{getStatusBadge(sale.status)}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => ViewDetails(sale._id)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handlePrint(sale._id)}>
-                          <Receipt className="mr-2 h-4 w-4" />
-                          Print Receipt
-                        </DropdownMenuItem>
-                        {sale.status === "COMPLETED" && (
-                          <DropdownMenuItem className="text-destructive" onClick={() => handleRefund(sale._id)}>
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                            Process Refund
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+
+                  
+                 <TableCell>
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" className="h-8 w-8 p-0">
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      {/* Always show View */}
+      <DropdownMenuItem onClick={() => ViewDetails(sale._id)}>
+        <Eye className="mr-2 h-4 w-4" />
+        View Details
+      </DropdownMenuItem>
+
+      {sale.status === "COMPLETED" && (
+        <>
+          <DropdownMenuItem onClick={() => handlePrint(sale._id)}>
+            <Receipt className="mr-2 h-4 w-4" />
+            Print Receipt
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => handleRefund(sale._id)}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Process Refund
+          </DropdownMenuItem>
+        </>
+      )}
+
+      {sale.status === "PENDING" && (
+        <DropdownMenuItem
+          className="text-success"
+          onClick={() => handleUpdate(sale._id)}
+        >
+          <Pencil className="mr-2 h-4 w-4" />
+          Update Bill
+        </DropdownMenuItem>
+      )}
+
+      {/* REFUNDED → sirf View (already handled above) */}
+    </DropdownMenuContent>
+  </DropdownMenu>
+</TableCell>
+
+
+
+
                 </TableRow>
               ))}
             </TableBody>
@@ -246,7 +300,31 @@ export function SalesHistory() {
         </CardContent>
       </Card>
       <SaleViewDialog open={open} sales={sales[0]} close={closedial} />
-      <PrintDialog open={openPrint} sales={sales[0]} close={closedial} />
+     
+      {showInvoice && latestSale && (
+        <InvoicePreview
+          saleId={latestSale}
+          onClose={() => {
+            setShowInvoice(false);
+            setLatestSale(null);
+          }}
+        />
+      )}
+
+  {/* <EditInvoiceDialog 
+  open={showedit} 
+  sales={selectedSale} 
+  close={() => setShowEdit(false)} 
+/> */}
+
+
+
+<EditInvoiceDialog 
+  open={showedit} 
+  saleId={selectedSale}   // ✅ sirf id bhejo
+  close={() => setShowEdit(false)} 
+/>
+
     </div>
   )
 }
