@@ -123,22 +123,18 @@ export function ProductsTable() {
             <TableBody>
               {products.map((product, index) => (
                 <TableRow key={index}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                    <img
-  src={
-    product.images?.length
-      ? `http://localhost:3010${product.images[0]}`
-      : "/placeholder.svg"
-  }
-  alt={product.name}
-  className="h-10 w-10 rounded-md object-cover"
-/>
-                      <div>
-                        <div className="font-medium">{product.name}</div>
-                      </div>
-                    </div>
-                  </TableCell>
+                 <TableCell>
+  <div className="flex items-center gap-3">
+    <img
+      src={product.images?.length ? product.images[0] : "/placeholder.svg"}
+      alt={product.name}
+      className="h-10 w-10 rounded-md object-cover"
+    />
+    <div>
+      <div className="font-medium">{product.name}</div>
+    </div>
+  </div>
+</TableCell>
                   <TableCell className="font-mono text-sm">{product.sku}</TableCell>
                   <TableCell>{product.category}</TableCell>
                   <TableCell>Rs.{product.price}</TableCell>

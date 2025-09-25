@@ -208,20 +208,21 @@ export function EditProductDialog({ product, open, onOpenChange, getmethod }: Ed
     }}
   />
 
-  {/* Display existing images from the product */}
-  {product.images?.length > 0 && (
-    <div className="flex flex-wrap gap-2 mt-2">
-      {product.images.map((imgUrl:any, idx:any) => (
-        <div key={`existing-${idx}`} className="w-20 h-20 border rounded overflow-hidden">
-          <img
-            src={`http://localhost:3010${imgUrl}`}
-            alt={`existing-${idx}`}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ))}
-    </div>
-  )}
+ {/* Display existing images from the product */}
+{product.images?.length > 0 && (
+  <div className="flex flex-wrap gap-2 mt-2">
+    {product.images.map((imgUrl: string, idx: number) => (
+      <div key={`existing-${idx}`} className="w-20 h-20 border rounded overflow-hidden">
+        <img
+          src={imgUrl} // 👈 Cloudinary URL directly use
+          alt={`existing-${idx}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    ))}
+  </div>
+)}
+
 
   {/* Display newly selected files */}
   {formData.images.length > 0 && (

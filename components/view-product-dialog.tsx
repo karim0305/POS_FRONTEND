@@ -111,41 +111,42 @@ export function ViewProductDialog({ product, open, onOpenChange }: ViewProductDi
           {formData.images.length > 0 && (
             <div>
               <Label>Product Images</Label>
-              <div className="relative mt-3 w-full h-72 flex items-center justify-center bg-gray-100 rounded-xl shadow-md overflow-hidden">
-                <img
-                  src={`http://localhost:3010${formData.images[currentIndex]}`}
-                  alt={`product-${currentIndex}`}
-                  className="w-full h-full object-contain"
-                />
+             <div className="relative mt-3 w-full h-72 flex items-center justify-center bg-gray-100 rounded-xl shadow-md overflow-hidden">
+  <img
+    src={formData.images?.length ? formData.images[currentIndex] : "/placeholder.svg"}
+    alt={`product-${currentIndex}`}
+    className="w-full h-full object-contain"
+  />
 
-                {/* Prev Button */}
-                <button
-                  onClick={prevSlide}
-                  className="absolute left-3 bg-white/80 p-2 rounded-full shadow hover:bg-white"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
+  {/* Prev Button */}
+  <button
+    onClick={prevSlide}
+    className="absolute left-3 bg-white/80 p-2 rounded-full shadow hover:bg-white"
+  >
+    <ChevronLeft className="w-6 h-6" />
+  </button>
 
-                {/* Next Button */}
-                <button
-                  onClick={nextSlide}
-                  className="absolute right-3 bg-white/80 p-2 rounded-full shadow hover:bg-white"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
+  {/* Next Button */}
+  <button
+    onClick={nextSlide}
+    className="absolute right-3 bg-white/80 p-2 rounded-full shadow hover:bg-white"
+  >
+    <ChevronRight className="w-6 h-6" />
+  </button>
 
-                {/* Indicators */}
-                <div className="absolute bottom-3 flex gap-2">
-                  {formData.images.map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={`w-2.5 h-2.5 rounded-full ${
-                        idx === currentIndex ? "bg-blue-600" : "bg-gray-400"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
+  {/* Indicators */}
+  <div className="absolute bottom-3 flex gap-2">
+    {formData.images?.map((_, idx) => (
+      <div
+        key={idx}
+        className={`w-2.5 h-2.5 rounded-full ${
+          idx === currentIndex ? "bg-blue-600" : "bg-gray-400"
+        }`}
+      />
+    ))}
+  </div>
+</div>
+
             </div>
           )}
         </div>
