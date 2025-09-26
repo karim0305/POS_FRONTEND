@@ -1,5 +1,5 @@
-const baseUrl = "http://localhost:3010/api";
-
+//const baseUrl = "http://localhost:3010/api";
+const baseUrl = "https://v1-backend.vercel.app/api";
 
 export const dashboardApi = {
   getProfit: `${baseUrl}/dashboard/profit`,
