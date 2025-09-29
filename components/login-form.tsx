@@ -48,9 +48,9 @@ export function LoginForm() {
    Cookies.set("name", data.user?.fullName || "", { expires: 1 });
    Cookies.set("user", JSON.stringify(data.user), { expires: 1 });
 
-    console.log("Cookies set:", Cookies.get("token"));
+    //console.log("Cookies set:", Cookies.get("token"));
 
-    toast.success(`Welcome back, ${data.user?.email || "User"} 🎉`) // 👈 success toast
+  toast.success(`Welcome back, ${data.user?.fullName || "User"}!`);// 👈 success toast
 
     router.push("/dashboard")
   } catch (err) {
