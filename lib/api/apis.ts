@@ -1,5 +1,5 @@
-// const baseUrl = "http://localhost:3010/api";
-const baseUrl = "https://v1-backend.vercel.app/api";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string;
+//const baseUrl = "https://v1-backend.vercel.app/api";
 
 
 
