@@ -2,8 +2,12 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { DashboardStats } from "@/components/dashboard-stats"
 import { RecentSales } from "@/components/recent-sales"
 import { SalesChart } from "@/components/sales-chart"
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie"
+
 
 export default function DashboardPage() {
+  
   return (
     <DashboardLayout>
       <div className="space-y-6">

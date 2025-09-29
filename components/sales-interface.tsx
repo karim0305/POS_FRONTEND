@@ -116,7 +116,8 @@ export function SalesInterface() {
   const getTotal = () =>
     cart.reduce((total, item) => total + Number(item.price) * item.quantity, 0)
   const getTax = () => getTotal() * 0.08
-  const getFinalTotal = () => getTotal() + getTax()
+  //const getFinalTotal = () => getTotal() + getTax()
+  const getFinalTotal = () => getTotal()
 
   // 🟢 Whenever cart changes → reset payAmount = final total
   useEffect(() => {
@@ -286,16 +287,17 @@ export function SalesInterface() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal:</span>
-                    <span>${getTotal().toFixed(2)}</span>
+                    <span>Rs.{getTotal().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Tax (8%):</span>
-                    <span>${getTax().toFixed(2)}</span>
+                    <span>Tax (0%):</span>
+                    {/* <span>Rs.{getTax().toFixed(2)}</span> */}
+                     <span>Rs.{0}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold">
                     <span>Total:</span>
-                    <span>${getFinalTotal().toFixed(2)}</span>
+                    <span>Rs.{getFinalTotal().toFixed(2)}</span>
                   </div>
 
                   {/* 🟢 Pay Amount Field */}

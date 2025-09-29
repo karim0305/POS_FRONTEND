@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import {
@@ -20,6 +20,8 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+import Cookies from "js-cookie"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
@@ -37,7 +39,21 @@ const navigation = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+    const router = useRouter()
 
+
+    const [name, setName] = useState<string | null>(null);
+   useEffect(() => {
+    // ✅ client side pe hi chalega
+    const userName = Cookies.get("name");
+    setName(userName || null);
+  }, []);
+  const Logout = () => {
+      Cookies.remove("token");
+    Cookies.remove("name");
+    Cookies.remove("role");
+    router.push("/") // Redirect to login page
+  }
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div className={cn("flex h-full flex-col", mobile ? "w-full" : "w-64")}>
       <div className="flex h-16 items-center border-b border-border px-6">
@@ -48,6 +64,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         {navigation.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
+
           return (
             <Link
               key={item.name}
@@ -67,7 +84,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         })}
       </nav>
       <div className="border-t border-border p-4">
-        <Button variant="ghost" className="w-full justify-start text-muted-foreground">
+        <Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={() => Logout()}>
           <LogOut className="mr-3 h-5 w-5" />
           Sign Out
         </Button>
@@ -99,7 +116,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </Button>
           <div className="ml-auto">
             <Button variant="outline" size="sm">
-              Admin User
+             Hi Mr. {name}
             </Button>
           </div>
         </header>

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import {toast} from "react-toastify"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, EyeOff, Store } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
+import { AuthApi } from "@/lib/api/apis"
+import Cookies from "js-cookie"
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -17,16 +20,46 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 1000)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsLoading(true)
+
+  try {
+    const res = await fetch(AuthApi.Login, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      toast.error(data.message || "Invalid credentials ❌")  // 👈 error toast
+      return
+    }
+
+    // Save token
+  
+   Cookies.set("token", data.access_token, { expires: 1 })
+   Cookies.set("role", data.user?.role || "", { expires: 1 });
+   Cookies.set("name", data.user?.fullName || "", { expires: 1 });
+   Cookies.set("user", JSON.stringify(data.user), { expires: 1 });
+
+    console.log("Cookies set:", Cookies.get("token"));
+
+    toast.success(`Welcome back, ${data.user?.email || "User"} 🎉`) // 👈 success toast
+
+    router.push("/dashboard")
+  } catch (err) {
+    toast.error("Something went wrong. Please try again.") // 👈 error toast
+  } finally {
+    setIsLoading(false)
   }
+}
+
 
   return (
     <Card className="w-full">
@@ -71,6 +104,7 @@ export function LoginForm() {
               </Button>
             </div>
           </div>
+
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
